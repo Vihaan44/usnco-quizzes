@@ -1,0 +1,42 @@
+.backBar {
+  padding: 16px 24px 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.back {
+  background: none;
+  color: var(--text2);
+  font-size: 0.85rem;
+  font-family: var(--mono);
+  padding: 6px 0;
+  transition: color 0.15s;
+}
+.back:hover { color: var(--accent); }
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--mono);
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err {
+  padding: 48px;
+  color: var(--danger);
+  font-family: var(--mono);
+}

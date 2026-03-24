@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:        #0a0c0f;
+  --bg2:       #111318;
+  --bg3:       #1a1d24;
+  --border:    #2a2d35;
+  --accent:    #4fc3f7;
+  --accent2:   #81c784;
+  --danger:    #ef5350;
+  --gold:      #ffd54f;
+  --text:      #e8eaf0;
+  --text2:     #8b9099;
+  --text3:     #555a66;
+  --radius:    10px;
+  --mono:      'IBM Plex Mono', monospace;
+  --serif:     'DM Serif Display', serif;
+  --sans:      'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: var(--sans);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+img { display: block; max-width: 100%; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

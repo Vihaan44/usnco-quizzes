@@ -1,0 +1,128 @@
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--mono);
+  color: var(--text2);
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.err { padding: 48px; color: var(--danger); font-family: var(--mono); }
+
+/* ── Lobby ── */
+.lobby {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+}
+
+.back {
+  background: none;
+  color: var(--text2);
+  font-size: 0.85rem;
+  font-family: var(--mono);
+  padding: 6px 0;
+  transition: color 0.15s;
+  align-self: flex-start;
+}
+.back:hover { color: var(--accent); }
+
+.lobbyCard {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 40px;
+  max-width: 640px;
+  width: 100%;
+  margin-top: 24px;
+  animation: fadeUp 0.35s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lobbyTitle {
+  font-family: var(--serif);
+  font-size: 2.2rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.lobbyDesc {
+  color: var(--text2);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+/* ── Breakdown table ── */
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 32px;
+}
+
+.bRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.bIcon { font-size: 1rem; width: 22px; text-align: center; }
+
+.bLabel {
+  flex: 1;
+  color: var(--text);
+  font-family: var(--sans);
+}
+
+.bYears {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--text3);
+  flex: 2;
+}
+
+.bCount {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+.startBtn {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px;
+  border-radius: var(--radius);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.startBtn:hover { opacity: 0.85; transform: translateY(-1px); }
+
+.backBarInline {
+  padding: 16px 24px 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
