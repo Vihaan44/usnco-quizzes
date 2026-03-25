@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { loadAllQuestions, TOPICS, recordAnswer } from '../data'
+import { loadAllQuestions, TOPICS, recordAnswer, recordExam } from '../data'
 import QuizRunner from '../components/QuizRunner'
 import styles from './FullExam.module.css'
 
@@ -14,19 +14,13 @@ function shuffle(arr) {
 }
 
 function pickDiverseYears(pool, count) {
-  // Shuffle, then pick `count` questions preferring different years
   const shuffled = shuffle(pool)
   const picked = []
   const usedYears = new Set()
-  // First pass: unique years
   for (const q of shuffled) {
     if (picked.length >= count) break
-    if (!usedYears.has(q.year)) {
-      picked.push(q)
-      usedYears.add(q.year)
-    }
+    if (!usedYears.has(q.year)) { picked.push(q); usedYears.add(q.year) }
   }
-  // Second pass: fill remaining
   for (const q of shuffled) {
     if (picked.length >= count) break
     if (!picked.includes(q)) picked.push(q)
@@ -37,11 +31,8 @@ function pickDiverseYears(pool, count) {
 function buildExam(allQuestions) {
   const exam = []
   for (const topic of TOPICS) {
-    const pool = allQuestions.filter(
-      q => q.topic === topic.label && q.answer !== '?'
-    )
-    const picked = pickDiverseYears(pool, 6)
-    exam.push(...picked)
+    const pool = allQuestions.filter(q => q.topic === topic.label && q.answer !== '?')
+    exam.push(...pickDiverseYears(pool, 6))
   }
   return exam
 }
@@ -58,11 +49,12 @@ export default function FullExam() {
       .catch(e => setError(e.message))
   }, [])
 
-  function handleComplete(answers, elapsed) {
-    answers.forEach(({ q, correct }) => {
-      recordAnswer(`exam_${q.year}_${q.number}`, correct)
-    })
+  async function handleComplete(answers, elapsed) {
+    for (const { q, correct } of answers) {
+      await recordAnswer(`exam_${q.year}_${q.number}`, correct)
+    }
     const correct = answers.filter(r => r.correct).length
+    await recordExam(correct, answers.length, elapsed)
     nav('/results', {
       state: { results: answers, correct, total: answers.length, title: 'Full Exam', elapsed }
     })
@@ -95,7 +87,6 @@ export default function FullExam() {
             A randomised 60-question exam built from all years.<br/>
             6 questions per topic block, drawn from different years.
           </p>
-
           <div className={styles.breakdown}>
             {topicBreakdown.map(({ topic, qs, years }) => (
               <div key={topic.slug} className={styles.bRow}>
@@ -106,7 +97,6 @@ export default function FullExam() {
               </div>
             ))}
           </div>
-
           <button className={styles.startBtn} onClick={() => setStarted(true)}>
             Start Exam
           </button>

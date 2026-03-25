@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { TOPICS, getTopicStats } from '../data'
 import styles from './Home.module.css'
+import AuthButton from '../components/AuthButton'
 
 export default function Home() {
   const nav = useNavigate()
@@ -18,6 +19,10 @@ export default function Home() {
           </p>
         </div>
         <div className={styles.headerActions}>
+          <AuthButton />
+          <button className={styles.btnSecondary} onClick={() => nav('/analytics')}>
+            Analytics
+          </button>
           <button className={styles.btnPrimary} onClick={() => nav('/exam')}>
             Full Exam Mode
             <span className={styles.btnTag}>60 Q · 110 min</span>
