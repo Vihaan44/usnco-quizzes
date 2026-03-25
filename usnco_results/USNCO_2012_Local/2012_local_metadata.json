@@ -866,10 +866,10 @@
       "image": "2012_local_q58.png",
       "layout": "4row",
       "choices": {
-        "A": "",
-        "B": "",
-        "C": "",
-        "D": ""
+        "A": "2012_local_q58_A.png",
+        "B": "2012_local_q58_B.png",
+        "C": "2012_local_q58_C.png",
+        "D": "2012_local_q58_D.png"
       }
     },
     {

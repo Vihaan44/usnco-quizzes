@@ -791,10 +791,10 @@
       "image": "2014_local_q53.png",
       "layout": "4row",
       "choices": {
-        "A": "",
-        "B": "",
-        "C": "",
-        "D": ""
+        "A": "2014_local_q53_A.png",
+        "B": "2014_local_q53_B.png",
+        "C": "2014_local_q53_C.png",
+        "D": "2014_local_q53_D.png"
       }
     },
     {
