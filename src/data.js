@@ -1,5 +1,5 @@
 // Base path for all static assets
-const BASE = '/usnco_results'
+const BASE = '/usnco-quizzes/usnco_results'
 
 export function imgUrl(folder, filename) {
   if (!filename) return ''
