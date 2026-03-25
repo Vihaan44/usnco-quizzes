@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../AuthContext'
@@ -15,12 +15,14 @@ function fmt(s) {
 export default function Analytics() {
   const { user } = useAuth()
   const nav = useNavigate()
+  const location = useLocation()
   const [stats, setStats] = useState(null)
   const [exams, setExams] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) { setLoading(false); return }
+    setLoading(true)
     async function load() {
       const [firestoreStats, examSnap] = await Promise.all([
         loadStatsFromFirestore(),
@@ -34,7 +36,7 @@ export default function Analytics() {
       setLoading(false)
     }
     load()
-  }, [user])
+  }, [user, location])
 
   const topicStats = TOPICS.map(topic => {
     let attempted = 0, correct = 0

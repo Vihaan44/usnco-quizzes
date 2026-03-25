@@ -43,11 +43,12 @@ export default function TopicQuiz() {
     return null
   }
 
-  function handleComplete(answers) {
-    // Record stats
-    answers.forEach(({ q, correct }) => {
-      recordAnswer(`topic_${topicSlug}_${q.year}_${q.number}`, correct)
-    })
+  async function handleComplete(answers) {
+    await Promise.all(
+      answers.map(({ q, correct }) =>
+        recordAnswer(`topic_${topicSlug}_${q.year}_${q.number}`, correct)
+      )
+    )
     setResults(answers)
     setDone(true)
   }

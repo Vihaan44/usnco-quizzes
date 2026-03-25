@@ -80,13 +80,16 @@ async function saveStatsToFirestore(stats) {
 
 export async function loadStatsFromFirestore() {
   const user = auth.currentUser
-  if (!user) return null
+  const localStats = getStats()
+  if (!user) return localStats
   try {
     const snap = await getDoc(doc(db, 'users', user.uid, 'data', 'stats'))
-    return snap.exists() ? snap.data() : {}
+    const firestoreStats = snap.exists() ? snap.data() : {}
+    // Merge: Firestore is source of truth, local fills any gaps
+    return { ...localStats, ...firestoreStats }
   } catch (e) {
     console.warn('Firestore load failed', e)
-    return null
+    return localStats
   }
 }
 
