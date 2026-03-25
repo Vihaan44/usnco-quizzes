@@ -821,10 +821,10 @@
       "image": "2007_local_q55.png",
       "layout": "4row",
       "choices": {
-        "A": "2007_local_q55_A.png",
-        "B": "2007_local_q55_B.png",
-        "C": "2007_local_q55_C.png",
-        "D": "2007_local_q55_D.png"
+        "A": "",
+        "B": "",
+        "C": "",
+        "D": ""
       }
     },
     {
