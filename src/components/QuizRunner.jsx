@@ -4,16 +4,15 @@ import styles from './QuizRunner.module.css'
 
 const LETTERS = ['A', 'B', 'C', 'D']
 
-export default function QuizRunner({ questions, onComplete, title, subtitle }) {
+export default function QuizRunner({ questions, onComplete, onAnswer, title, subtitle }) {
   const [idx, setIdx]           = useState(0)
-  const [selected, setSelected] = useState(null)   // letter chosen
-  const [revealed, setRevealed] = useState(false)  // answer shown
-  const [answers, setAnswers]   = useState([])     // {q, chosen, correct}
+  const [selected, setSelected] = useState(null)
+  const [revealed, setRevealed] = useState(false)
+  const [answers, setAnswers]   = useState([])
   const [elapsed, setElapsed]   = useState(0)
 
   const q = questions[idx]
 
-  // Timer
   useEffect(() => {
     const t = setInterval(() => setElapsed(e => e + 1), 1000)
     return () => clearInterval(t)
@@ -31,6 +30,9 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
     const record = { q, chosen: selected, correct: selected === q.answer }
     const newAnswers = [...answers, record]
     setAnswers(newAnswers)
+
+    if (onAnswer) onAnswer(record)
+
     setSelected(null)
     setRevealed(false)
     if (idx + 1 >= questions.length) {
@@ -38,9 +40,8 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
     } else {
       setIdx(idx + 1)
     }
-  }, [q, selected, answers, idx, questions, onComplete, elapsed])
+  }, [q, selected, answers, idx, questions, onComplete, onAnswer, elapsed])
 
-  // keyboard shortcuts
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'a' || e.key === 'A') choose('A')
@@ -57,7 +58,6 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
 
   return (
     <div className={styles.page}>
-      {/* Top bar */}
       <div className={styles.topBar}>
         <div className={styles.topLeft}>
           <span className={styles.topTitle}>{title}</span>
@@ -69,18 +69,15 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
         </div>
       </div>
 
-      {/* Progress */}
       <div className={styles.progressBar}>
         <div className={styles.progressFill} style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Question meta */}
       <div className={styles.meta}>
         <span className={styles.metaTag}>{q.topic}</span>
         <span className={styles.metaTag2}>{q.year} Local · Q{q.number}</span>
       </div>
 
-      {/* Question image */}
       <div className={styles.questionWrap}>
         <img
           className={styles.questionImg}
@@ -90,7 +87,6 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
         />
       </div>
 
-      {/* Choices */}
       <div className={styles.choices}>
         {LETTERS.map(letter => {
           let state = 'default'
@@ -129,7 +125,6 @@ export default function QuizRunner({ questions, onComplete, title, subtitle }) {
         })}
       </div>
 
-      {/* Next button */}
       {revealed && (
         <div className={styles.nextWrap}>
           <div className={styles.verdict}>

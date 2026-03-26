@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { loadAllQuestions, topicBySlug, recordAnswer } from '../data'
+import { useAuth } from '../AuthContext'
 import QuizRunner from '../components/QuizRunner'
 import styles from './TopicQuiz.module.css'
 
@@ -16,12 +17,11 @@ function shuffle(arr) {
 export default function TopicQuiz() {
   const { topicSlug } = useParams()
   const nav = useNavigate()
+  const { user } = useAuth()
   const topic = topicBySlug(topicSlug)
 
   const [questions, setQuestions] = useState(null)
-  const [error, setError]         = useState(null)
-  const [done, setDone]           = useState(false)
-  const [results, setResults]     = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!topic) return
@@ -37,20 +37,14 @@ export default function TopicQuiz() {
   if (error)  return <div className={styles.err}>Error: {error}</div>
   if (!questions) return <div className={styles.loading}><span className={styles.spinner}/>Loading questions…</div>
 
-  if (done && results) {
-    const correct = results.filter(r => r.correct).length
-    nav('/results', { state: { results, correct, total: results.length, title: topic.label } })
-    return null
+  function handleAnswer({ q, correct }) {
+    console.log('recording answer:', q.year, q.number, correct, 'user:', user)
+    recordAnswer(`topic_${topicSlug}_${q.year}_${q.number}`, correct, user)
   }
 
-  async function handleComplete(answers) {
-    await Promise.all(
-      answers.map(({ q, correct }) =>
-        recordAnswer(`topic_${topicSlug}_${q.year}_${q.number}`, correct)
-      )
-    )
-    setResults(answers)
-    setDone(true)
+  function handleComplete(answers) {
+    const correct = answers.filter(r => r.correct).length
+    nav('/results', { state: { results: answers, correct, total: answers.length, title: topic.label } })
   }
 
   return (
@@ -61,6 +55,7 @@ export default function TopicQuiz() {
       <QuizRunner
         questions={questions}
         onComplete={handleComplete}
+        onAnswer={handleAnswer}
         title={`${topic.icon} ${topic.label}`}
         subtitle={`${questions.length} questions · all years`}
       />

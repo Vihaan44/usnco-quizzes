@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """
 ╔══════════════════════════════════════════════════════════════╗
-║                 USNCO EXAM PARSER  v5                        ║
+║                 USNCO EXAM PARSER  v5.1                      ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  Pixel-content-aware cropping + robust answer key parsing    ║
+║                                                              ║
+║  FIXED: Bottom-capping now works for ALL layout types        ║
+║         (2x2, 4row, vertical) to prevent footer bleeding     ║
 ║                                                              ║
 ║  Answer key strategies (tried in order):                     ║
 ║    1. Table format  "1. D"  — exam PDFs (60/60)              ║
@@ -13,6 +16,11 @@
 ║  USAGE:  python usnco_parser.py                              ║
 ║  REQUIREMENTS:                                               ║
 ║    pip install pdfplumber Pillow pypdfium2 numpy             ║
+║                                                              ║
+║  BATCH FILE FORMAT (one exam per line):                      ║
+║    /path/to/exam.pdf, 2025, Local                            ║
+║    /path/to/exam.pdf, 2024, National                         ║
+║    # Lines starting with # are ignored                       ║
 ╚══════════════════════════════════════════════════════════════╝
 """
 
@@ -74,23 +82,87 @@ def pts_to_px(v): return int(v * SCALE)
 def px_to_pts(v): return v / SCALE
 
 # ═══════════════════════════════════════════════════════════════════════════════
+#  INDEX.JSON  — merge, never replace
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def load_index(idx_path):
+    """Load existing index.json, returning a dict keyed by (year, exam_type)."""
+    if not os.path.exists(idx_path):
+        return {}
+    try:
+        with open(idx_path) as f:
+            data = json.load(f)
+        return {
+            (e['year'], e['exam_type']): e
+            for e in data.get('exams', [])
+        }
+    except Exception:
+        return {}
+
+def save_index(idx_path, existing: dict, new_entries: list):
+    """
+    Merge new_entries into existing index and write.
+    new_entries is a list of dicts with keys: year, exam_type, folder.
+    Existing entries with the same (year, exam_type) are overwritten.
+    """
+    merged = dict(existing)  # copy
+    for entry in new_entries:
+        key = (entry['year'], entry['exam_type'])
+        merged[key] = entry
+    # Sort by year then exam_type for stable output
+    exams = sorted(merged.values(), key=lambda e: (e['year'], e['exam_type']))
+    with open(idx_path, 'w') as f:
+        json.dump({"exams": exams}, f, indent=2)
+    print(f"\n  Index ({len(exams)} total exams) → {idx_path}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  BATCH FILE PARSING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def parse_batch_file(txt_path):
+    """
+    Parse a txt file where each non-comment line is:
+        /path/to/exam.pdf, YEAR, ExamType
+
+    Returns a list of (pdf_path, year, exam_type) tuples.
+    Skips blank lines and lines starting with #.
+    """
+    entries = []
+    with open(txt_path) as f:
+        for lineno, raw in enumerate(f, 1):
+            line = raw.strip()
+            if not line or line.startswith('#'):
+                continue
+            parts = [p.strip().strip('"').strip("'") for p in line.split(',')]
+            if len(parts) < 3:
+                print(f"  ⚠️  Line {lineno}: expected 'path, year, type' — skipping: {line!r}")
+                continue
+            pdf_path  = parts[0]
+            year_str  = parts[1]
+            exam_type = parts[2]
+            if not Path(pdf_path).exists():
+                print(f"  ⚠️  Line {lineno}: file not found — skipping: {pdf_path!r}")
+                continue
+            if not Path(pdf_path).suffix.lower() == '.pdf':
+                print(f"  ⚠️  Line {lineno}: not a PDF — skipping: {pdf_path!r}")
+                continue
+            try:
+                year = int(year_str)
+            except ValueError:
+                print(f"  ⚠️  Line {lineno}: invalid year {year_str!r} — skipping")
+                continue
+            entries.append((pdf_path, year, exam_type))
+    return entries
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 #  ANSWER KEY EXTRACTION  — dual strategy
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def extract_answer_key(pdf_path):
-    """
-    Strategy 1 — Table format (exam PDFs with embedded key, e.g. "1. D").
-                 Tries the last page first, then all others.
-                 Returns immediately if ≥55 answers found.
-
-    Strategy 2 — Prose format (annotated solution PDFs like
-                 "Thus, the correct answer is D." / ", or B .").
-                 Used only when Strategy 1 yields <55 answers.
-                 Best-effort; always prefer the exam PDF for key extraction.
-    """
     answers = {}
 
-    # ── Strategy 1: table format ─────────────────────────────────────────────
     with pdfplumber.open(pdf_path) as pdf:
         page_order = [pdf.pages[-1]] + list(pdf.pages[:-1])
         for page in page_order:
@@ -100,20 +172,17 @@ def extract_answer_key(pdf_path):
                 if 1 <= n <= 60:
                     answers[n] = ans
             if len(answers) >= 55:
-                return answers   # perfect key found — done
+                return answers
 
     if len(answers) >= 40:
-        return answers           # good enough from table format
+        return answers
 
-    # ── Strategy 2: prose format ─────────────────────────────────────────────
-    # Collect and flatten all text (join lines so split answers are reunited)
     with pdfplumber.open(pdf_path) as pdf:
         full_text = ' '.join(
             (page.extract_text() or '').replace('\n', ' ')
             for page in pdf.pages
         )
 
-    # Split into per-question sections: "N. Capital…" at non-word boundaries
     parts = re.split(r'(?<!\w)(\d{1,2})\. (?=[A-Z])', full_text)
 
     sections: dict[int, str] = {}
@@ -124,7 +193,6 @@ def extract_answer_key(pdf_path):
             sections[n] = parts[i + 1]
         i += 2
 
-    # Ordered patterns — first match in the section body wins
     PROSE_PATTERNS = [
         r'correct answer is\s+[^A-D\n]{0,50}?\b([A-D])\b',
         r'\bthe answer is\s+[^A-D\n]{0,50}?\b([A-D])\b',
@@ -145,7 +213,6 @@ def extract_answer_key(pdf_path):
                 prose_answers[n] = m.group(1)
                 break
 
-    # Merge: Strategy-1 answers take priority
     for n, ans in prose_answers.items():
         if n not in answers:
             answers[n] = ans
@@ -303,7 +370,7 @@ def _q_bot_px(n, q_nums, q_pos, content_ceil):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  QUESTION CROPS  (stem only — stops just above first choice label)
+#  QUESTION CROPS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def compute_question_crops(q_pos, choice_data, page_images, content_ceil):
@@ -314,7 +381,6 @@ def compute_question_crops(q_pos, choice_data, page_images, content_ceil):
         pi, col = info['page'], info['col']
         cx = COL_LEFT if col == 'left' else COL_RIGHT
         y_top = info['y'] - 3
-        # Stop just above the first choice label (captures stem + any inline diagram)
         if n in choice_data:
             y_bot = min(c['y'] for c in choice_data[n]['choices'].values()) - 3
         else:
@@ -331,7 +397,7 @@ def compute_question_crops(q_pos, choice_data, page_images, content_ceil):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  CHOICE CROPS  (A/B/C/D individually, graphs fully captured via pixel scan)
+#  CHOICE CROPS  —  FIXED: Bottom-capping for ALL layouts
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def compute_choice_crops(q_pos, choice_data, page_images, content_ceil):
@@ -345,6 +411,7 @@ def compute_choice_crops(q_pos, choice_data, page_images, content_ceil):
         layout, choices = choice_data[n]['layout'], choice_data[n]['choices']
         cx = COL_LEFT if col == 'left' else COL_RIGHT
         if pi not in page_images: continue
+
         img   = page_images[pi]
         q_bot = _q_bot_px(n, q_nums, q_pos, content_ceil)
         L     = ['A', 'B', 'C', 'D']
@@ -357,6 +424,14 @@ def compute_choice_crops(q_pos, choice_data, page_images, content_ceil):
             )
 
         crops = {}
+        
+        # ── UNIVERSAL BOTTOM CAP ──────────────────────────────────────────────
+        # Prevent bleeding into footer/next question for ALL layout types.
+        # Cap at ~3 line-heights below the lowest choice label.
+        line_height_px = pts_to_px(14)
+        max_choice_y = max(choices[l]['y'] for l in L)
+        safe_bottom = min(q_bot, pts_to_px(max_choice_y) + int(line_height_px * 3))
+        # ──────────────────────────────────────────────────────────────────────
 
         if layout == '2x2':
             by_y  = sorted(L, key=lambda l: choices[l]['y'])
@@ -364,13 +439,12 @@ def compute_choice_crops(q_pos, choice_data, page_images, content_ceil):
             row2  = sorted(by_y[2:], key=lambda l: choices[l]['x'])
             r1_top = min(choices[l]['y'] for l in row1) - 3
             r2_top = min(choices[l]['y'] for l in row2) - 3
-            # x-split: left edge of the right-column label
             x_mid  = min(choices[row1[1]]['x'], choices[row2[1]]['x']) - 3
             for letter, lx0, lx1, ly0, ly1 in [
                 (row1[0], cx['x0'], x_mid,   r1_top, pts_to_px(r2_top)),
                 (row1[1], x_mid,   cx['x1'], r1_top, pts_to_px(r2_top)),
-                (row2[0], cx['x0'], x_mid,   r2_top, q_bot),
-                (row2[1], x_mid,   cx['x1'], r2_top, q_bot),
+                (row2[0], cx['x0'], x_mid,   r2_top, safe_bottom),  # ← uses safe_bottom
+                (row2[1], x_mid,   cx['x1'], r2_top, safe_bottom),  # ← uses safe_bottom
             ]:
                 bbox = reg(lx0, ly0, lx1, ly1)
                 if bbox: crops[letter] = {'page': pi, 'box': bbox}
@@ -378,19 +452,23 @@ def compute_choice_crops(q_pos, choice_data, page_images, content_ceil):
         elif layout == '4row':
             by_x = sorted(L, key=lambda l: choices[l]['x'])
             ry   = min(choices[l]['y'] for l in L) - 3
+            # Use the universal safe_bottom here
             for k, letter in enumerate(by_x):
                 lx0 = max(choices[by_x[k]]['x'] - 3, cx['x0'])
                 lx1 = (min(choices[by_x[k+1]]['x'] - 3, cx['x1'])
                        if k + 1 < 4 else cx['x1'])
-                bbox = reg(lx0, ry, lx1, q_bot)
+                bbox = reg(lx0, ry, lx1, safe_bottom)  # ← uses safe_bottom
                 if bbox: crops[letter] = {'page': pi, 'box': bbox}
 
         elif layout == 'vertical':
             by_y = sorted(L, key=lambda l: choices[l]['y'])
             for k, letter in enumerate(by_y):
                 ly0 = choices[letter]['y'] - 3
-                ly1 = (pts_to_px(choices[by_y[k+1]]['y'] - 3)
-                       if k + 1 < 4 else q_bot)
+                # Last choice uses safe_bottom instead of raw q_bot
+                if k + 1 < 4:
+                    ly1 = pts_to_px(choices[by_y[k+1]]['y'] - 3)
+                else:
+                    ly1 = safe_bottom  # ← uses safe_bottom
                 bbox = reg(cx['x0'], ly0, cx['x1'], ly1)
                 if bbox: crops[letter] = {'page': pi, 'box': bbox}
 
@@ -508,33 +586,20 @@ def prompt(msg, default=None):
     val = input(f"  {msg}{f' [{default}]' if default else ''}: ").strip()
     return val if val else default
 
-def prompt_file(msg):
+def prompt_file(msg, extensions=('.pdf', '.txt')):
     while True:
         path = input(f"  {msg}: ").strip().strip('"').strip("'")
         if not path: return None
         p = Path(path)
-        if p.exists() and p.suffix.lower() == '.pdf': return str(p)
-        print(f"    ✗  Not found or not a PDF: {path}")
+        if p.exists() and p.suffix.lower() in extensions: return str(p)
+        print(f"    ✗  Not found or wrong type ({'/'.join(extensions)}): {path}")
 
-def main():
-    print("""
-╔══════════════════════════════════════════════════════════════╗
-║                 USNCO EXAM PARSER  v5                        ║
-╚══════════════════════════════════════════════════════════════╝
-
-Outputs per question:
-  • Question stem image   →  2025_local_q07.png
-  • Per-choice images     →  2025_local_q07_A.png  _B  _C  _D
-  • JSON metadata         →  2025_local_metadata.json
-
-Answer key is extracted automatically from the last page of the exam PDF.
-""")
-
-    all_meta, last_base = [], None
-
+def collect_exams_interactively():
+    """Prompt the user one exam at a time. Returns list of (pdf, year, type)."""
+    exams = []
     while True:
         print("─" * 62)
-        exam_pdf = prompt_file("Exam PDF path (Enter to finish)")
+        exam_pdf = prompt_file("Exam PDF path (Enter to finish)", extensions=('.pdf',))
         if not exam_pdf: break
 
         m         = re.search(r'(19|20)\d{2}', Path(exam_pdf).stem)
@@ -546,33 +611,76 @@ Answer key is extracted automatically from the last page of the exam PDF.
         except (ValueError, TypeError):
             print("  ✗  Invalid year"); continue
 
-        base      = prompt("Base output directory",
-                           default=os.path.join(os.path.dirname(exam_pdf), "usnco_results"))
-        last_base = base
+        exams.append((exam_pdf, year, exam_type))
+    return exams
 
+def main():
+    print("""
+╔══════════════════════════════════════════════════════════════╗
+║                 USNCO EXAM PARSER  v5.1                      ║
+║                                                              ║
+║  FIXED: Bottom-capping now works for ALL layout types        ║
+╚══════════════════════════════════════════════════════════════╝
+
+Outputs per question:
+  • Question stem image   →  2025_local_q07.png
+  • Per-choice images     →  2025_local_q07_A.png  _B  _C  _D
+  • JSON metadata         →  2025_local_metadata.json
+
+index.json is updated (not replaced) on every run.
+""")
+
+    # ── Choose input mode ────────────────────────────────────────────────────
+    print("  How would you like to provide exam paths?")
+    print("    1) Enter them one by one interactively")
+    print("    2) Load from a .txt batch file")
+    mode = prompt("Choice", default="1")
+
+    exams = []   # list of (pdf_path, year, exam_type)
+
+    if mode == "2":
+        txt = prompt_file("Batch .txt file path", extensions=('.txt',))
+        if not txt:
+            print("  No file provided — exiting.")
+            return
+        exams = parse_batch_file(txt)
+        if not exams:
+            print("  No valid entries found in batch file — exiting.")
+            return
+        print(f"\n  Loaded {len(exams)} exam(s) from batch file.")
+    else:
+        exams = collect_exams_interactively()
+        if not exams:
+            print("  No exams entered — exiting.")
+            return
+
+    # ── Base output directory ────────────────────────────────────────────────
+    default_base = os.path.join(os.path.dirname(exams[0][0]), "usnco_results")
+    base = prompt("Base output directory", default=default_base)
+    os.makedirs(base, exist_ok=True)
+
+    # ── Load existing index so we can merge into it ──────────────────────────
+    idx_path      = os.path.join(base, "index.json")
+    existing_idx  = load_index(idx_path)
+    new_entries   = []
+
+    # ── Parse each exam ──────────────────────────────────────────────────────
+    for exam_pdf, year, exam_type in exams:
         try:
             meta, path = parse_exam(exam_pdf, year, exam_type, base)
-            all_meta.append({"meta": meta, "path": path})
+            new_entries.append({
+                "year":      meta["year"],
+                "exam_type": meta["exam_type"],
+                "folder":    os.path.basename(path),
+            })
         except Exception as e:
-            print(f"\n  ✗  Error: {e}")
+            print(f"\n  ✗  Error parsing {exam_pdf}: {e}")
             import traceback; traceback.print_exc()
 
-        if prompt("Parse another exam? [y/N]", default="n").lower() != 'y':
-            break
-
-    if all_meta and last_base:
-        idx = os.path.join(last_base, "index.json")
-        with open(idx, 'w') as f:
-            json.dump({"exams": [
-                {
-                    "year":      m["meta"]["year"],
-                    "exam_type": m["meta"]["exam_type"],
-                    "folder":    os.path.basename(m["path"]),
-                }
-                for m in all_meta
-            ]}, f, indent=2)
-        print(f"\n  ALL DONE — {len(all_meta)} exam(s) parsed")
-        print(f"  Index → {idx}\n")
+    # ── Merge & write index ──────────────────────────────────────────────────
+    if new_entries:
+        save_index(idx_path, existing_idx, new_entries)
+        print(f"\n  ALL DONE — {len(new_entries)} exam(s) parsed this run\n")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

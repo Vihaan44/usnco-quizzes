@@ -68,11 +68,12 @@ export function getStats() {
 }
 
 // ── Firestore helpers ──
-async function saveStatsToFirestore(stats) {
-  const user = auth.currentUser
+async function saveStatsToFirestore(stats, user) {
+  console.log('saveStatsToFirestore called, user:', user)
   if (!user) return
   try {
     await setDoc(doc(db, 'users', user.uid, 'data', 'stats'), stats)
+    console.log('Firestore write success')
   } catch (e) {
     console.warn('Firestore save failed', e)
   }
@@ -85,7 +86,6 @@ export async function loadStatsFromFirestore() {
   try {
     const snap = await getDoc(doc(db, 'users', user.uid, 'data', 'stats'))
     const firestoreStats = snap.exists() ? snap.data() : {}
-    // Merge: Firestore is source of truth, local fills any gaps
     return { ...localStats, ...firestoreStats }
   } catch (e) {
     console.warn('Firestore load failed', e)
@@ -93,13 +93,13 @@ export async function loadStatsFromFirestore() {
   }
 }
 
-export async function recordAnswer(questionKey, correct) {
+export async function recordAnswer(questionKey, correct, user) {
   const stats = getStats()
   if (!stats[questionKey]) stats[questionKey] = { attempts: 0, correct: 0 }
   stats[questionKey].attempts++
   if (correct) stats[questionKey].correct++
   localStorage.setItem(STATS_KEY, JSON.stringify(stats))
-  await saveStatsToFirestore(stats)
+  await saveStatsToFirestore(stats, user)
 }
 
 export async function recordExam(score, total, elapsed) {
