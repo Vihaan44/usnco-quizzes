@@ -3,6 +3,7 @@ import { imgUrl } from '../data'
 import styles from './QuizRunner.module.css'
 
 const LETTERS = ['A', 'B', 'C', 'D']
+const REF_URL = 'https://www.acs.org/content/dam/acsorg/education/students/highschool/olympiad/examsolutions/2021-usnco-reference-page.pdf'
 
 export default function QuizRunner({ questions, onComplete, onAnswer, title, subtitle }) {
   const [idx, setIdx]           = useState(0)
@@ -10,6 +11,7 @@ export default function QuizRunner({ questions, onComplete, onAnswer, title, sub
   const [revealed, setRevealed] = useState(false)
   const [answers, setAnswers]   = useState([])
   const [elapsed, setElapsed]   = useState(0)
+  const [showRef, setShowRef]   = useState(false)
 
   const q = questions[idx]
 
@@ -64,6 +66,7 @@ export default function QuizRunner({ questions, onComplete, onAnswer, title, sub
           {subtitle && <span className={styles.topSub}>{subtitle}</span>}
         </div>
         <div className={styles.topRight}>
+          <button className={styles.refBtn} onClick={() => setShowRef(true)}>Reference</button>
           <span className={styles.timer}>{fmt(elapsed)}</span>
           <span className={styles.counter}>{idx + 1} / {questions.length}</span>
         </div>
@@ -137,6 +140,18 @@ export default function QuizRunner({ questions, onComplete, onAnswer, title, sub
             {idx + 1 >= questions.length ? 'See Results' : 'Next Question'}
             <kbd className={styles.kbd}>↵</kbd>
           </button>
+        </div>
+      )}
+
+      {showRef && (
+        <div className={styles.refOverlay}>
+          <div className={styles.refModal}>
+            <div className={styles.refModalHeader}>
+              <span className={styles.refTitle}>USNCO Reference</span>
+              <button className={styles.closeBtn} onClick={() => setShowRef(false)}>Close</button>
+            </div>
+            <iframe className={styles.refIframe} src={REF_URL} title="Reference Sheet" />
+          </div>
         </div>
       )}
     </div>
