@@ -1,124 +1,19 @@
 {
   "exams": [
     {
-      "year": 2000,
-      "exam_type": "Local",
-      "folder": "USNCO_2000_Local"
+      "year": 2025,
+      "exam_type": "National",
+      "folder": "USNCO_2025_National"
     },
     {
-      "year": 2001,
+      "year": 2025,
       "exam_type": "Local",
-      "folder": "USNCO_2001_Local"
+      "folder": "USNCO_2025_Local"
     },
     {
-      "year": 2002,
-      "exam_type": "Local",
-      "folder": "USNCO_2002_Local"
-    },
-    {
-      "year": 2003,
-      "exam_type": "Local",
-      "folder": "USNCO_2003_Local"
-    },
-    {
-      "year": 2004,
-      "exam_type": "Local",
-      "folder": "USNCO_2004_Local"
-    },
-    {
-      "year": 2005,
-      "exam_type": "Local",
-      "folder": "USNCO_2005_Local"
-    },
-    {
-      "year": 2006,
-      "exam_type": "Local",
-      "folder": "USNCO_2006_Local"
-    },
-    {
-      "year": 2007,
-      "exam_type": "Local",
-      "folder": "USNCO_2007_Local"
-    },
-    {
-      "year": 2008,
-      "exam_type": "Local",
-      "folder": "USNCO_2008_Local"
-    },
-    {
-      "year": 2009,
-      "exam_type": "Local",
-      "folder": "USNCO_2009_Local"
-    },
-    {
-      "year": 2010,
-      "exam_type": "Local",
-      "folder": "USNCO_2010_Local"
-    },
-    {
-      "year": 2011,
-      "exam_type": "Local",
-      "folder": "USNCO_2011_Local"
-    },
-    {
-      "year": 2012,
-      "exam_type": "Local",
-      "folder": "USNCO_2012_Local"
-    },
-    {
-      "year": 2013,
-      "exam_type": "Local",
-      "folder": "USNCO_2013_Local"
-    },
-    {
-      "year": 2014,
-      "exam_type": "Local",
-      "folder": "USNCO_2014_Local"
-    },
-    {
-      "year": 2015,
-      "exam_type": "Local",
-      "folder": "USNCO_2015_Local"
-    },
-    {
-      "year": 2016,
-      "exam_type": "Local",
-      "folder": "USNCO_2016_Local"
-    },
-    {
-      "year": 2017,
-      "exam_type": "Local",
-      "folder": "USNCO_2017_Local"
-    },
-    {
-      "year": 2018,
-      "exam_type": "Local",
-      "folder": "USNCO_2018_Local"
-    },
-    {
-      "year": 2019,
-      "exam_type": "Local",
-      "folder": "USNCO_2019_Local"
-    },
-    {
-      "year": 2020,
-      "exam_type": "Local",
-      "folder": "USNCO_2020_Local"
-    },
-    {
-      "year": 2021,
-      "exam_type": "Local",
-      "folder": "USNCO_2021_Local"
-    },
-    {
-      "year": 2022,
-      "exam_type": "Local",
-      "folder": "USNCO_2022_Local"
-    },
-    {
-      "year": 2023,
-      "exam_type": "Local",
-      "folder": "USNCO_2023_Local"
+      "year": 2024,
+      "exam_type": "National",
+      "folder": "USNCO_2024_National"
     },
     {
       "year": 2024,
@@ -126,9 +21,229 @@
       "folder": "USNCO_2024_Local"
     },
     {
-      "year": 2025,
+      "year": 2023,
+      "exam_type": "National",
+      "folder": "USNCO_2023_National"
+    },
+    {
+      "year": 2023,
       "exam_type": "Local",
-      "folder": "USNCO_2025_Local"
+      "folder": "USNCO_2023_Local"
+    },
+    {
+      "year": 2022,
+      "exam_type": "National",
+      "folder": "USNCO_2022_National"
+    },
+    {
+      "year": 2022,
+      "exam_type": "Local",
+      "folder": "USNCO_2022_Local"
+    },
+    {
+      "year": 2021,
+      "exam_type": "National",
+      "folder": "USNCO_2021_National"
+    },
+    {
+      "year": 2021,
+      "exam_type": "Local",
+      "folder": "USNCO_2021_Local"
+    },
+    {
+      "year": 2020,
+      "exam_type": "National",
+      "folder": "USNCO_2020_National"
+    },
+    {
+      "year": 2020,
+      "exam_type": "Local",
+      "folder": "USNCO_2020_Local"
+    },
+    {
+      "year": 2019,
+      "exam_type": "National",
+      "folder": "USNCO_2019_National"
+    },
+    {
+      "year": 2019,
+      "exam_type": "Local",
+      "folder": "USNCO_2019_Local"
+    },
+    {
+      "year": 2018,
+      "exam_type": "National",
+      "folder": "USNCO_2018_National"
+    },
+    {
+      "year": 2018,
+      "exam_type": "Local",
+      "folder": "USNCO_2018_Local"
+    },
+    {
+      "year": 2017,
+      "exam_type": "National",
+      "folder": "USNCO_2017_National"
+    },
+    {
+      "year": 2017,
+      "exam_type": "Local",
+      "folder": "USNCO_2017_Local"
+    },
+    {
+      "year": 2016,
+      "exam_type": "National",
+      "folder": "USNCO_2016_National"
+    },
+    {
+      "year": 2016,
+      "exam_type": "Local",
+      "folder": "USNCO_2016_Local"
+    },
+    {
+      "year": 2015,
+      "exam_type": "National",
+      "folder": "USNCO_2015_National"
+    },
+    {
+      "year": 2015,
+      "exam_type": "Local",
+      "folder": "USNCO_2015_Local"
+    },
+    {
+      "year": 2014,
+      "exam_type": "National",
+      "folder": "USNCO_2014_National"
+    },
+    {
+      "year": 2014,
+      "exam_type": "Local",
+      "folder": "USNCO_2014_Local"
+    },
+    {
+      "year": 2013,
+      "exam_type": "National",
+      "folder": "USNCO_2013_National"
+    },
+    {
+      "year": 2013,
+      "exam_type": "Local",
+      "folder": "USNCO_2013_Local"
+    },
+    {
+      "year": 2012,
+      "exam_type": "National",
+      "folder": "USNCO_2012_National"
+    },
+    {
+      "year": 2012,
+      "exam_type": "Local",
+      "folder": "USNCO_2012_Local"
+    },
+    {
+      "year": 2011,
+      "exam_type": "National",
+      "folder": "USNCO_2011_National"
+    },
+    {
+      "year": 2011,
+      "exam_type": "Local",
+      "folder": "USNCO_2011_Local"
+    },
+    {
+      "year": 2010,
+      "exam_type": "National",
+      "folder": "USNCO_2010_National"
+    },
+    {
+      "year": 2010,
+      "exam_type": "Local",
+      "folder": "USNCO_2010_Local"
+    },
+    {
+      "year": 2009,
+      "exam_type": "National",
+      "folder": "USNCO_2009_National"
+    },
+    {
+      "year": 2009,
+      "exam_type": "Local",
+      "folder": "USNCO_2009_Local"
+    },
+    {
+      "year": 2008,
+      "exam_type": "National",
+      "folder": "USNCO_2008_National"
+    },
+    {
+      "year": 2008,
+      "exam_type": "Local",
+      "folder": "USNCO_2008_Local"
+    },
+    {
+      "year": 2007,
+      "exam_type": "National",
+      "folder": "USNCO_2007_National"
+    },
+    {
+      "year": 2007,
+      "exam_type": "Local",
+      "folder": "USNCO_2007_Local"
+    },
+    {
+      "year": 2006,
+      "exam_type": "Local",
+      "folder": "USNCO_2006_Local"
+    },
+    {
+      "year": 2005,
+      "exam_type": "National",
+      "folder": "USNCO_2005_National"
+    },
+    {
+      "year": 2005,
+      "exam_type": "Local",
+      "folder": "USNCO_2005_Local"
+    },
+    {
+      "year": 2004,
+      "exam_type": "National",
+      "folder": "USNCO_2004_National"
+    },
+    {
+      "year": 2004,
+      "exam_type": "Local",
+      "folder": "USNCO_2004_Local"
+    },
+    {
+      "year": 2003,
+      "exam_type": "Local",
+      "folder": "USNCO_2003_Local"
+    },
+    {
+      "year": 2002,
+      "exam_type": "National",
+      "folder": "USNCO_2002_National"
+    },
+    {
+      "year": 2002,
+      "exam_type": "Local",
+      "folder": "USNCO_2002_Local"
+    },
+    {
+      "year": 2001,
+      "exam_type": "National",
+      "folder": "USNCO_2001_National"
+    },
+    {
+      "year": 2001,
+      "exam_type": "Local",
+      "folder": "USNCO_2001_Local"
+    },
+    {
+      "year": 2000,
+      "exam_type": "Local",
+      "folder": "USNCO_2000_Local"
     }
   ]
 }
